@@ -9,46 +9,64 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
         }
 
         body {
             background-color: #1e1e1e;
             color: #00ff00;
-            padding: 20px;
-            height: 100vh;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: clamp(10px, 2vw, 20px);
         }
 
         #terminal {
-            height: calc(100vh - 40px);
+            flex: 1;
             overflow-y: auto;
-            padding: 10px;
+            padding: clamp(5px, 1vw, 10px);
+            font-size: clamp(14px, 2vw, 16px);
+            line-height: 1.5;
+            word-wrap: break-word;
+            -webkit-overflow-scrolling: touch;
         }
 
         .input-line {
             display: flex;
             margin: 5px 0;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
         }
 
         .prompt {
             color: #00ff00;
-            margin-right: 10px;
+            white-space: nowrap;
+            font-size: clamp(14px, 2vw, 16px);
         }
 
         #input {
             background: transparent;
             border: none;
             color: #00ff00;
-            font-size: 16px;
-            flex-grow: 1;
+            font-size: clamp(14px, 2vw, 16px);
+            flex: 1;
+            min-width: 50px;
             outline: none;
+            padding: 0 5px;
         }
 
         .output {
             color: #ffffff;
             margin: 5px 0;
             line-height: 1.4;
+            white-space: pre-wrap;
+            max-width: 100%;
         }
 
         .error {
@@ -63,6 +81,54 @@
             margin: 10px 0;
             padding: 10px;
             border: 1px solid #00ff00;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        /* Table styles for project displays */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        td, th {
+            padding: 5px;
+            text-align: left;
+            border: 1px solid #00ff00;
+        }
+
+        /* Mobile optimizations */
+        @media screen and (max-width: 600px) {
+            .project {
+                padding: 5px;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .banner-text {
+                font-size: clamp(12px, 3vw, 14px);
+                white-space: pre-wrap;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
         }
 
         @keyframes blink {
@@ -77,6 +143,36 @@
             background-color: #00ff00;
             animation: blink 1s infinite;
             margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Command suggestions */
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .suggestion {
+            background: #2a2a2a;
+            color: #00ff00;
+            padding: 2px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: clamp(12px, 1.8vw, 14px);
+        }
+
+        .suggestion:hover {
+            background: #3a3a3a;
+        }
+
+        /* ASCII art responsive adjustments */
+        .ascii-art {
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+            font-size: clamp(10px, 2vw, 14px);
         }
     </style>
 </head>
@@ -84,10 +180,15 @@
     <div id="terminal">
         <div class="output success">Welcome to Terminal Portfolio v1.0.0</div>
         <div class="output">Type 'help' to see available commands</div>
+        <div class="suggestions">
+            <span class="suggestion" onclick="executeCommand('help')">help</span>
+            <span class="suggestion" onclick="executeCommand('about')">about</span>
+            <span class="suggestion" onclick="executeCommand('projects')">projects</span>
+        </div>
     </div>
     <div class="input-line">
         <span class="prompt">visitor@portfolio:~$</span>
-        <input type="text" id="input" autofocus>
+        <input type="text" id="input" autofocus spellcheck="false" autocomplete="off">
         <div class="cursor"></div>
     </div>
 
@@ -149,15 +250,20 @@ ${portfolio.about}
 Technical Skills:
 ${portfolio.skills.map(skill => `• ${skill}`).join('\n')}
             `,
-            projects: () => `
-Projects:
-${portfolio.projects.map(project => `
-Project: ${project.name}
-Description: ${project.description}
-Technologies: ${project.tech.join(', ')}
-Link: ${project.link}
-`).join('\n')}
-            `,
+            projects: () => {
+                let output = '\nProjects:\n';
+                portfolio.projects.forEach(project => {
+                    output += `
+╔════════════════════════════════════════
+║ ${project.name}
+╠════════════════════════════════════════
+║ Description: ${project.description}
+║ Technologies: ${project.tech.join(', ')}
+║ Link: ${project.link}
+╚════════════════════════════════════════\n`;
+                });
+                return output;
+            },
             contact: () => `
 Contact Information:
 Email: ${portfolio.email}
@@ -174,10 +280,10 @@ Twitter: ${portfolio.social.twitter}
                 return '';
             },
             banner: () => `
-╔══════════════════════════════════════════╗
-║             Terminal Portfolio           ║
-║                v1.0.0                    ║
-╚══════════════════════════════════════════╝
+┌────────────────────────────────────┐
+│        Terminal Portfolio          │
+│            v1.0.0                 │
+└────────────────────────────────────┘
             `,
             experience: () => `
 Work Experience:
@@ -214,6 +320,13 @@ Education:
             return `Command not found: ${command}. Type 'help' for available commands.`;
         }
 
+        // Execute command from suggestions
+        function executeCommand(command) {
+            input.value = command;
+            const event = new KeyboardEvent('keypress', { key: 'Enter' });
+            input.dispatchEvent(event);
+        }
+
         // Handle input
         input.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -230,6 +343,16 @@ Education:
                 output.innerText = processCommand(command);
                 terminal.appendChild(output);
 
+                // Add suggestions after command output
+                const suggestions = document.createElement('div');
+                suggestions.className = 'suggestions';
+                suggestions.innerHTML = `
+                    <span class="suggestion" onclick="executeCommand('help')">help</span>
+                    <span class="suggestion" onclick="executeCommand('about')">about</span>
+                    <span class="suggestion" onclick="executeCommand('projects')">projects</span>
+                `;
+                terminal.appendChild(suggestions);
+
                 // Clear input and scroll to bottom
                 input.value = '';
                 terminal.scrollTop = terminal.scrollHeight;
@@ -239,8 +362,20 @@ Education:
         // Keep focus on input
         document.addEventListener('click', () => input.focus());
 
+        // Handle mobile keyboard issues
+        if ('virtualKeyboard' in navigator) {
+            navigator.virtualKeyboard.overlaysContent = true;
+        }
+
         // Show initial banner
         terminal.innerHTML += `<div class="output">${commands.banner()}</div>`;
+
+        // Prevent zooming on mobile
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
