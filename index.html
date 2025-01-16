@@ -1,13 +1,246 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/jquery"></script>
-<script src="https://cdn.jsdelivr.net/npm/jquery.terminal/js/jquery.terminal.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jquery.terminal/css/jquery.terminal.min.css"/>
-<link rel="stylesheet" href="style.css">
-<title>NeilMani Terminal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+
+        body {
+            background-color: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #terminal {
+            height: calc(100vh - 40px);
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .input-line {
+            display: flex;
+            margin: 5px 0;
+        }
+
+        .prompt {
+            color: #00ff00;
+            margin-right: 10px;
+        }
+
+        #input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-size: 16px;
+            flex-grow: 1;
+            outline: none;
+        }
+
+        .output {
+            color: #ffffff;
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+
+        .error {
+            color: #ff0000;
+        }
+
+        .success {
+            color: #00ff00;
+        }
+
+        .project {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #00ff00;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 5px;
+        }
+    </style>
 </head>
 <body>
-    <script src="script.js"></script>
+    <div id="terminal">
+        <div class="output success">Welcome to Terminal Portfolio v1.0.0</div>
+        <div class="output">Type 'help' to see available commands</div>
+    </div>
+    <div class="input-line">
+        <span class="prompt">visitor@portfolio:~$</span>
+        <input type="text" id="input" autofocus>
+        <div class="cursor"></div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const input = document.getElementById('input');
+
+        // Portfolio data
+        const portfolio = {
+            name: "John Doe",
+            title: "Full Stack Developer",
+            location: "San Francisco, CA",
+            email: "john@example.com",
+            about: "Passionate developer with 5 years of experience in web development. Specialized in React, Node.js, and Python.",
+            skills: ["JavaScript", "React", "Node.js", "Python", "SQL", "AWS"],
+            projects: [
+                {
+                    name: "E-commerce Platform",
+                    description: "Built a full-stack e-commerce platform using MERN stack",
+                    tech: ["React", "Node.js", "MongoDB", "Express"],
+                    link: "https://github.com/johndoe/ecommerce"
+                },
+                {
+                    name: "AI Chat Bot",
+                    description: "Developed an AI-powered chatbot using Python and TensorFlow",
+                    tech: ["Python", "TensorFlow", "Flask", "Docker"],
+                    link: "https://github.com/johndoe/chatbot"
+                }
+            ],
+            social: {
+                github: "github.com/johndoe",
+                linkedin: "linkedin.com/in/johndoe",
+                twitter: "@johndoe"
+            }
+        };
+
+        // Available commands
+        const commands = {
+            help: () => `
+Available commands:
+- help: Show this help message
+- about: Display information about me
+- skills: List my technical skills
+- projects: Show my portfolio projects
+- contact: Display contact information
+- social: Show social media links
+- clear: Clear the terminal
+- banner: Display welcome banner
+- experience: Show work experience
+- education: Show educational background
+            `,
+            about: () => `
+About Me:
+${portfolio.name} - ${portfolio.title}
+Location: ${portfolio.location}
+${portfolio.about}
+            `,
+            skills: () => `
+Technical Skills:
+${portfolio.skills.map(skill => `• ${skill}`).join('\n')}
+            `,
+            projects: () => `
+Projects:
+${portfolio.projects.map(project => `
+Project: ${project.name}
+Description: ${project.description}
+Technologies: ${project.tech.join(', ')}
+Link: ${project.link}
+`).join('\n')}
+            `,
+            contact: () => `
+Contact Information:
+Email: ${portfolio.email}
+Location: ${portfolio.location}
+            `,
+            social: () => `
+Social Media:
+GitHub: ${portfolio.social.github}
+LinkedIn: ${portfolio.social.linkedin}
+Twitter: ${portfolio.social.twitter}
+            `,
+            clear: () => {
+                terminal.innerHTML = '';
+                return '';
+            },
+            banner: () => `
+╔══════════════════════════════════════════╗
+║             Terminal Portfolio           ║
+║                v1.0.0                    ║
+╚══════════════════════════════════════════╝
+            `,
+            experience: () => `
+Work Experience:
+• Senior Developer at Tech Corp (2020-Present)
+  - Led team of 5 developers
+  - Implemented microservices architecture
+  
+• Full Stack Developer at StartUp Inc (2018-2020)
+  - Developed full-stack web applications
+  - Improved site performance by 40%
+            `,
+            education: () => `
+Education:
+• Master's in Computer Science
+  University of Technology (2016-2018)
+  
+• Bachelor's in Software Engineering
+  Tech Institute (2012-2016)
+            `
+        };
+
+        // Process commands
+        function processCommand(cmd) {
+            const command = cmd.toLowerCase().trim();
+            
+            if (command === '') {
+                return '';
+            }
+
+            if (commands[command]) {
+                return commands[command]();
+            }
+
+            return `Command not found: ${command}. Type 'help' for available commands.`;
+        }
+
+        // Handle input
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const command = input.value;
+
+                // Add command to terminal
+                const commandLine = document.createElement('div');
+                commandLine.innerHTML = `<span class="prompt">visitor@portfolio:~$</span> ${command}`;
+                terminal.appendChild(commandLine);
+
+                // Process command and show output
+                const output = document.createElement('div');
+                output.className = 'output';
+                output.innerText = processCommand(command);
+                terminal.appendChild(output);
+
+                // Clear input and scroll to bottom
+                input.value = '';
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        });
+
+        // Keep focus on input
+        document.addEventListener('click', () => input.focus());
+
+        // Show initial banner
+        terminal.innerHTML += `<div class="output">${commands.banner()}</div>`;
+    </script>
 </body>
 </html>
